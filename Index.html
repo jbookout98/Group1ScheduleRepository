@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #0073e6;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #0073e6;
+            color: white;
+        }
+        td {
+            height: 60px;
+        }
+        .time-column {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        form {
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>My University Schedule</h1>
+</header>
+
+<form id="courseForm">
+    <h2>Add a New Course</h2>
+    <label for="courseName">Course Name:</label>
+    <input type="text" id="courseName" name="courseName" required>
+
+    <label for="courseTime">Time Slot:</label>
+    <select id="courseTime" name="courseTime" required>
+        <option value="8:00 - 9:00 AM">8:00 - 9:00 AM</option>
+        <option value="9:00 - 10:00 AM">9:00 - 10:00 AM</option>
+        <option value="10:00 - 11:00 AM">10:00 - 11:00 AM</option>
+        <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+        <option value="12:00 - 1:00 PM">12:00 - 1:00 PM</option>
+        <option value="1:00 - 2:00 PM">1:00 - 2:00 PM</option>
+        <option value="2:00 - 3:00 PM">2:00 - 3:00 PM</option>
+        <option value="3:00 - 4:00 PM">3:00 - 4:00 PM</option>
+    </select>
+
+    <label for="courseDay">Day:</label>
+    <select id="courseDay" name="courseDay" required>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+    </select>
+
+    <label for="courseLocation">Location:</label>
+    <input type="text" id="courseLocation" name="courseLocation" required>
+
+    <button type="button" onclick="addCourse()">Add Course</button>
+</form>
+
+<table id="scheduleTable">
+    <tr>
+        <th>Time</th>
+        <th>Monday</th>
+        <th>Tuesday</th>
+        <th>Wednesday</th>
+        <th>Thursday</th>
+        <th>Friday</th>
+    </tr>
+    <tr>
+        <td class="time-column">8:00 - 9:00 AM</td>
+        <td id="Monday_8:00 - 9:00 AM"></td>
+        <td id="Tuesday_8:00 - 9:00 AM"></td>
+        <td id="Wednesday_8:00 - 9:00 AM"></td>
+        <td id="Thursday_8:00 - 9:00 AM"></td>
+        <td id="Friday_8:00 - 9:00 AM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">9:00 - 10:00 AM</td>
+        <td id="Monday_9:00 - 10:00 AM"></td>
+        <td id="Tuesday_9:00 - 10:00 AM"></td>
+        <td id="Wednesday_9:00 - 10:00 AM"></td>
+        <td id="Thursday_9:00 - 10:00 AM"></td>
+        <td id="Friday_9:00 - 10:00 AM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">10:00 - 11:00 AM</td>
+        <td id="Monday_10:00 - 11:00 AM"></td>
+        <td id="Tuesday_10:00 - 11:00 AM"></td>
+        <td id="Wednesday_10:00 - 11:00 AM"></td>
+        <td id="Thursday_10:00 - 11:00 AM"></td>
+        <td id="Friday_10:00 - 11:00 AM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">11:00 AM - 12:00 PM</td>
+        <td id="Monday_11:00 AM - 12:00 PM"></td>
+        <td id="Tuesday_11:00 AM - 12:00 PM"></td>
+        <td id="Wednesday_11:00 AM - 12:00 PM"></td>
+        <td id="Thursday_11:00 AM - 12:00 PM"></td>
+        <td id="Friday_11:00 AM - 12:00 PM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">12:00 - 1:00 PM</td>
+        <td id="Monday_12:00 - 1:00 PM"></td>
+        <td id="Tuesday_12:00 - 1:00 PM"></td>
+        <td id="Wednesday_12:00 - 1:00 PM"></td>
+        <td id="Thursday_12:00 - 1:00 PM"></td>
+        <td id="Friday_12:00 - 1:00 PM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">1:00 - 2:00 PM</td>
+        <td id="Monday_1:00 - 2:00 PM"></td>
+        <td id="Tuesday_1:00 - 2:00 PM"></td>
+        <td id="Wednesday_1:00 - 2:00 PM"></td>
+        <td id="Thursday_1:00 - 2:00 PM"></td>
+        <td id="Friday_1:00 - 2:00 PM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">2:00 - 3:00 PM</td>
+        <td id="Monday_2:00 - 3:00 PM"></td>
+        <td id="Tuesday_2:00 - 3:00 PM"></td>
+        <td id="Wednesday_2:00 - 3:00 PM"></td>
+        <td id="Thursday_2:00 - 3:00 PM"></td>
+        <td id="Friday_2:00 - 3:00 PM"></td>
+    </tr>
+    <tr>
+        <td class="time-column">3:00 - 4:00 PM</td>
+        <td id="Monday_3:00 - 4:00 PM"></td>
+        <td id="Tuesday_3:00 - 4:00 PM"></td>
+        <td id="Wednesday_3:00 - 4:00 PM"></td>
+        <td id="Thursday_3:00 - 4:00 PM"></td>
+        <td id="Friday_3:00 - 4:00 PM"></td>
+    </tr>
+</table>
+
+<script>
+    function addCourse() {
+        const courseName = document.getElementById('courseName').value;
+        const courseTime = document.getElementById('courseTime').value;
+        const courseDay = document.getElementById('courseDay').value;
+        const courseLocation = document.getElementById('courseLocation').value;
+
+        const cellId = courseDay + '_' + courseTime;
+        const cell = document.getElementById(cellId);
+
+        if (cell.innerHTML !== "") {
+            alert("There is already a course scheduled at this time.");
+        } else {
+            cell.innerHTML = courseName + "<br>" + courseLocation;
+        }
+
+        // Clear the form after submission
+        document.getElementById('courseForm').reset();
+    }
+</script>
+
+</body>
+</html>
