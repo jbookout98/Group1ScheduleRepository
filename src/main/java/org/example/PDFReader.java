@@ -5,11 +5,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import java.io.InputStream;
 import java.io.IOException;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 
-import java.io.InputStream;
-import java.io.IOException;
 
 public class PDFReader {
     public static String extractTextFromPDF(String filePath) {
