@@ -116,7 +116,7 @@
         <option value="Friday">Friday</option>
     </select>
 
-    <label for="courseLocation">Location:</label>
+    <label for="courseLocation">Location2.0:</label>
     <input type="text" id="courseLocation" name="courseLocation" required>
 
     <button type="button" onclick="addCourse()">Add Course</button>
@@ -166,32 +166,35 @@
         document.getElementById('courseForm').reset();
     }
 
-    async function fetchAndSaveSchedule() {
-        try {
-            const response = await fetch('http://localhost:8080/api/getCourses');
-            if (!response.ok) {
-                throw new Error('Failed to fetch courses from server.');
-            }
-            const courses = await response.json();
+async function fetchAndSaveSchedule() {
+    const crn = document.getElementById('courseCRN').value; // Get CRN from the input field
+    const apiUrl = `http://localhost:8080/api/getCourses?crn=${crn}`; // Include CRN in query string
 
-            // Clear the existing schedule
-            const cells = document.querySelectorAll('#scheduleTable td');
-            cells.forEach(cell => cell.innerHTML = "");
-
-            // Populate the schedule table with the fetched courses
-            courses.forEach(course => {
-                const cellId = `${course.days}_${course.startTime} - ${course.endTime}`;
-                const cell = document.getElementById(cellId);
-                if (cell) {
-                    cell.innerHTML = `${course.subject} ${course.number} <br> ${course.location}`;
-                }
-            });
-            alert('Schedule has been successfully updated.');
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error fetching schedule data.');
+    try {
+        const response = await fetch(apiUrl); // Send request to API
+        if (!response.ok) {
+            throw new Error('Failed to fetch courses from server.');
         }
+        const courses = await response.json();
+
+        // Assuming we're focusing on the first course for demonstration purposes
+        if (courses.length > 0) {
+            const course = courses[0]; // Using the first course, adjust this as needed
+
+            // Set the location text box with the building and room number
+            document.getElementById('courseLocation').value = `${course.building} ${course.room}`;
+        } else {
+            alert("No course found with the given CRN.");
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error fetching course data.');
     }
+}
+
+
+
+
 </script>
 </body>
 </html>

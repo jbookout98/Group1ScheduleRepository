@@ -5,83 +5,137 @@ import java.util.List;
 
 public class ScheduleParser {
 
-    // Method to parse the extracted text using the column positions
+    private static final int[] FIELD_LENGTHS = {5, 4, 4, 3, -1, 2, 3, 3, 3, 7, 7, 7, 4, 4,Integer.MAX_VALUE};
+    // Method to parse the extracted text and convert it into a list of Course objects
     public static List<Course> parseCourses(String scheduleText) {
         List<Course> courses = new ArrayList<>();
 
         // Split the text into lines
         String[] lines = scheduleText.split("\n");
-        boolean inScheduleSection = false;
-        int[] columnPositions = null;
+        boolean inScheduleSection = false; // Flag to indicate if we are in the schedule section
 
         System.out.println("Starting to parse the schedule...");
-
+        System.out.println(lines[3] );
         for (String line : lines) {
-            // Print the current line being processed for debugging
+            // Skip empty lines
+            if (line.trim().isEmpty()) {
+                continue;
+            }
 
             // Check if we are at the beginning of the schedule section
-            if (line.contains("Spring 2024") && line.contains("Schedule of Classes")) {
+            if (line.contains("Spring 2024")) {
                 inScheduleSection = true;
-                continue;
-            }
-
-            // Find the header line and determine the column positions
-            if (inScheduleSection && line.contains("Crn") && line.contains("Subject") && line.contains("Number")) {
-
-                columnPositions = getColumnPositions(line);
 
                 continue;
             }
+            if (line.contains("Schedule of Classes")){
+                inScheduleSection = true;
 
-            // If we're in the schedule section and have found the columns, start parsing the course data
-            if (inScheduleSection && columnPositions != null) {
-                // Extract course data based on the column positions
-                String crn = extractColumnData(line, columnPositions[0], columnPositions[1]);
-                String subject = extractColumnData(line, columnPositions[1], columnPositions[2]);
-                String number = extractColumnData(line, columnPositions[2], columnPositions[3]);
-                String section = extractColumnData(line, columnPositions[3], columnPositions[4]);
-                String days = extractColumnData(line, columnPositions[7], columnPositions[8]);
-                String startTime = extractColumnData(line, columnPositions[8], columnPositions[9]);
-                String endTime = extractColumnData(line, columnPositions[9], columnPositions[10]);
-                String building = extractColumnData(line, columnPositions[10], columnPositions[11]);
-                String room = extractColumnData(line, columnPositions[11], columnPositions[12]);
-                String instructor = extractColumnData(line, columnPositions[12], line.length());
+                continue;
+            }
 
-                // Debug information for each course data line
 
-                courses.add(new Course(crn, subject, number, section, instructor, days, startTime, endTime, building, room));
+
+            // If we have reached the schedule section, check for header lines and skip them
+            if (line.contains("Crn") && line.contains("Subject") && line.contains("Number")) {
+
+                continue;
+            }
+
+            // Parse each valid line dynamically and add the course to the list
+            Course course = parseCourseFromLine(line);
+            if (course != null) {
+                courses.add(course);
+            } else {
+                System.out.println("Failed to parse line: " + line);
             }
         }
 
-        System.out.println("Finished parsing the schedule.");
+        System.out.println("Finished parsing the schedule. Total courses parsed: " + courses.size());
         return courses;
     }
 
-    // Method to determine the start positions of each column based on the header line
-    private static int[] getColumnPositions(String headerLine) {
-        int[] positions = new int[13];
-        positions[0] = headerLine.indexOf("Crn");
-        positions[1] = headerLine.indexOf("Subject");
-        positions[2] = headerLine.indexOf("Number");
-        positions[3] = headerLine.indexOf("Sect");
-        positions[4] = headerLine.indexOf("Dept");
-        positions[5] = headerLine.indexOf("Campus");
-        positions[6] = headerLine.indexOf("Type");
-        positions[7] = headerLine.indexOf("Days");
-        positions[8] = headerLine.indexOf("Begin");
-        positions[9] = headerLine.indexOf("End");
-        positions[10] = headerLine.indexOf("Bldg");
-        positions[11] = headerLine.indexOf("Room");
-        positions[12] = headerLine.indexOf("Instructor");
-        return positions;
+    // Method to parse a single line into a Course object
+    // Method to parse a single line into a Course object
+    // Method to parse a single line into a Course object using part tracking
+    private static Course parseCourseFromLine(String line) {
+        // Trim the line to remove leading and trailing whitespace
+        line = line.trim();
+
+        // Integer to track the current part index
+        int partIndex = 0;
+
+        // Create an array or list to store the parts we extract
+        List<String> parts = new ArrayList<>();
+
+        // While there is still line left to parse, continue extracting parts
+        while (!line.isEmpty() && partIndex < FIELD_LENGTHS.length) {
+            // Skip leading spaces before each part
+            line = line.trim();
+
+            // Determine the number of characters to extract based on partIndex
+            int lengthToExtract = FIELD_LENGTHS[partIndex];
+
+            String part;
+
+            if (lengthToExtract == -1) {
+                // Special case: for partIndex == 4, extract text until the next space
+                int firstSpaceIndex = line.indexOf(' ');
+
+                // If there's no space left in the line, take the remaining part
+                if (firstSpaceIndex == -1) {
+                    part = line;
+                    line = "";  // No more line left to process
+                } else {
+                    part = line.substring(0, firstSpaceIndex);  // Extract until the next space
+                    line = line.substring(firstSpaceIndex).trim();  // Update the remaining line
+                }
+            } else {
+                // If the remaining line is shorter than the expected length, take the rest of the line
+                if (lengthToExtract == Integer.MAX_VALUE || line.length() <= lengthToExtract) {
+                    part = line; // Take the remaining text if it's less than or equal to the expected length
+                    line = "";   // No more line left to process
+                } else {
+                    part = line.substring(0, lengthToExtract);  // Extract the part
+                    line = line.substring(lengthToExtract).trim();  // Update the remaining line
+                }
+            }
+
+            // Add the extracted part to the list and increase the part index
+            parts.add(part.trim());
+
+            partIndex++;
+        }
+
+        // Log the parts for debugging
+        System.out.println("Extracted Parts: " + parts);
+
+        // Assign extracted parts to variables (handle missing fields safely)
+        String crn = parts.size() > 0 ? parts.get(0) : "";
+        String subject = parts.size() > 1 ? parts.get(1) : "";
+        String number = parts.size() > 2 ? parts.get(2) : "";
+        String section = parts.size() > 3 ? parts.get(3) : "";
+        String campusLoc = parts.size() > 5 ? parts.get(5) : "";  // Special case handled above
+        if (campusLoc.contains("M")){
+            campusLoc="601 University Dr, San Marcos, TX 78666";
+        }else if(campusLoc.contains("R")){
+            campusLoc="1555 University Blvd, Round Rock, TX 78665";
+        }else{
+            campusLoc="Online";
+        }
+        String days = parts.size() > 9 ? parts.get(9) : "";
+        String startTime = parts.size() > 10 ? parts.get(10) : "";
+        String endTime = parts.size() > 11 ? parts.get(11) : "";
+        String building = parts.size() > 12 ? parts.get(12) : "";
+        String room = parts.size() > 13 ? parts.get(13) : "";
+        String instructor = parts.size() > 14 ? parts.get(14) : "";
+
+        for (int i = 15; i < parts.size(); i++) {
+            instructor += " " + parts.get(i);
+        }
+
+        // Return the new course object
+        return new Course(crn, subject, number, section, instructor.trim(), days, startTime, endTime, building, room, campusLoc);
     }
 
-    // Method to extract data from a specific column based on its start and end positions
-    private static String extractColumnData(String line, int start, int end) {
-        if (start < 0 || start >= line.length()) {
-            return "";
-        }
-        end = Math.min(end, line.length());
-        return line.substring(start, end).trim();
-    }
 }

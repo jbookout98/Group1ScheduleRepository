@@ -15,6 +15,7 @@ public class Main {
         // to see how IntelliJ IDEA suggests fixing it.
         String scheduleText = PDFReader.extractTextFromPDF("Spring2024.pdf");
         List<Course> courseList = ScheduleParser.parseCourses(scheduleText);
+        System.out.println("Cousres amount"+courseList.get(0));
 
         SpringApplication.run(Main.class, args);
     }
