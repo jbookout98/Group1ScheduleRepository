@@ -173,16 +173,20 @@ async function fetchAndSaveSchedule() {
     try {
         const response = await fetch(apiUrl); // Send request to API
         if (!response.ok) {
-            throw new Error('Failed to fetch courses from server.');
+            throw new Error('Failed to fetch course from server.');
         }
-        const courses = await response.json();
 
-        // Assuming we're focusing on the first course for demonstration purposes
-        if (courses.length > 0) {
-            const course = courses[0]; // Using the first course, adjust this as needed
+        const course = await response.json(); // Parse the response as JSON
 
-            // Set the location text box with the building and room number
-            document.getElementById('courseLocation').value = `${course.building} ${course.room}`;
+        console.log(course); // Log the JSON object to verify its format
+
+        if (course) {
+            // Extract the building and room from the parsed JSON
+            const building = course.building || 'N/A';
+            const room = course.room || 'N/A';
+
+            // Update the location text box with building and room number
+            document.getElementById('courseLocation').value = `${building} ${room}`;
         } else {
             alert("No course found with the given CRN.");
         }
@@ -191,6 +195,9 @@ async function fetchAndSaveSchedule() {
         alert('Error fetching course data.');
     }
 }
+
+
+
 
 
 
