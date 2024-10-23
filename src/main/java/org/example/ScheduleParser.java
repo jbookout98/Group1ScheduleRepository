@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ScheduleParser {
 
-    private static final int[] FIELD_LENGTHS = {5, 4, 4, 3, -1, 2, 3, 3, 3, 7, 7, 7, 4, 4,Integer.MAX_VALUE};
+    private static final int[] FIELD_LENGTHS = {5, 4, 4, 3, -1, 2, 3, 3, -1,2,2,7, 7, 7, 4, 4, 4,Integer.MAX_VALUE};
     // Method to parse the extracted text and convert it into a list of Course objects
     public static List<Course> parseCourses(String scheduleText) {
         List<Course> courses = new ArrayList<>();
@@ -107,8 +107,6 @@ public class ScheduleParser {
             partIndex++;
         }
 
-        // Log the parts for debugging
-        System.out.println("Extracted Parts: " + parts);
 
         // Assign extracted parts to variables (handle missing fields safely)
         String crn = parts.size() > 0 ? parts.get(0) : "";
@@ -123,12 +121,12 @@ public class ScheduleParser {
         }else{
             campusLoc="Online";
         }
-        String days = parts.size() > 9 ? parts.get(9) : "";
-        String startTime = parts.size() > 10 ? parts.get(10) : "";
-        String endTime = parts.size() > 11 ? parts.get(11) : "";
-        String building = parts.size() > 12 ? parts.get(12) : "";
-        String room = parts.size() > 13 ? parts.get(13) : "";
-        String instructor = parts.size() > 14 ? parts.get(14) : "";
+        String days = parts.size() > 11 ? parts.get(11) : "";
+        String startTime = parts.size() > 12 ? parts.get(12) : "";
+        String endTime = parts.size() > 13 ? parts.get(13) : "";
+        String building = parts.size() > 14 ? parts.get(14) : "";
+        String room = parts.size() > 15 ? parts.get(15) : "";
+        String instructor = parts.size() > 16 ? parts.get(16) : "";
 
         for (int i = 15; i < parts.size(); i++) {
             instructor += " " + parts.get(i);

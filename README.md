@@ -1,3 +1,5 @@
+
+
 University Schedule Management System (USMS)
 
 Schedule project 
@@ -10,4 +12,3 @@ But I used IntelliJ
 Run the index html
 then run the project.
 You can now communicate.
-Make the sure the port is 8080.

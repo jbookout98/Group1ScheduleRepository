@@ -29,13 +29,22 @@ public class Course {
     public void setCampusLocation(String location){
         this.campusLocation=location;
     }
-    public String getCrn(){
-        return  crn;
 
-    }
+
+    public String getCrn() { return crn; }
+    public String getSubject() { return subject; }
+    public String getNumber() { return number; }
+    public String getSection() { return section; }
+    public String getInstructor() { return instructor; }
+    public String getDays() { return days; }
+    public String getStartTime() { return startTime; }
+    public String getEndTime() { return endTime; }
+    public String getBuilding() { return building; }
+    public String getRoom() { return room; }
+    public String getCampusLocation() { return campusLocation; }
     @Override
     public String toString() {
-        return "Course{" +
+        return "{" +
                 "CRN='" + crn + '\'' +
                 ", Subject='" + subject + '\'' +
                 ", Number='" + number + '\'' +
