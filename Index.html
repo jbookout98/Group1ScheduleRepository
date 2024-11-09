@@ -140,6 +140,7 @@
         function addCourse() {
             const crn = document.getElementById("crn").value;
             const courseName = document.getElementById("course-name").value;
+            const section = document.getElementById("section").value;
             const time = document.getElementById("course-time-slot").value;
             const day = document.getElementById("course-day").value;
 
@@ -162,42 +163,11 @@
             const cellId = timeSlots[time] + days[day];
             const cell = document.getElementById(cellId);
             if (cell) {
-                cell.innerText = `${crn}\n${courseName}`;
+                cell.innerText = `${crn}\n${courseName}\nSection: ${section}`;
                 cell.style.backgroundColor = "#cce5ff";
                 cell.style.border = "1px solid #500000";
-            } else {
-                alert("Invalid day or time slot entered.");
-            }
-        }
-
-        function addEvent() {
-            const eventName = document.getElementById("event-name").value;
-            const eventType = document.getElementById("event-type").value;
-            const time = document.getElementById("event-time-slot").value;
-            const day = document.getElementById("event-day").value;
-
-            const timeSlots = {
-                "8:00 - 9:20 AM": "row1",
-                "9:30 - 10:50 AM": "row2",
-                "11:00 - 12:20 PM": "row3",
-                "12:30 - 1:50 PM": "row4",
-                "2:00 - 3:20 PM": "row5",
-                "3:30 - 4:50 PM": "row6"
-            };
-            const days = {
-                "Monday": "col2",
-                "Tuesday": "col3",
-                "Wednesday": "col4",
-                "Thursday": "col5",
-                "Friday": "col6"
-            };
-
-            const cellId = timeSlots[time] + days[day];
-            const cell = document.getElementById(cellId);
-            if (cell) {
-                cell.innerText = `Event: ${eventName} (${eventType})`;
-                cell.style.backgroundColor = "#cce5ff";
-                cell.style.border = "1px solid #500000";
+                // Clear form fields after adding the course
+                document.getElementById("courseForm").reset();
             } else {
                 alert("Invalid day or time slot entered.");
             }
@@ -225,6 +195,9 @@
 
                 <label for="course-name">Course Name:</label>
                 <input type="text" id="course-name" name="course-name" required>
+
+                <label for="section">Section:</label>
+                <input type="text" id="section" name="section" required>
 
                 <label for="time-slot">Time Slot:</label>
                 <select id="course-time-slot" name="time-slot" required>
