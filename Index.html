@@ -144,13 +144,12 @@
             const day = document.getElementById("course-day").value;
 
             const timeSlots = {
-                "8:00 - 9:00 AM": "row1",
-                "9:00 - 10:00 AM": "row2",
-                "10:00 - 11:00 AM": "row3",
-                "11:00 - 12:00 PM": "row4",
-                "12:00 - 1:00 PM": "row5",
-                "1:00 - 2:00 PM": "row6",
-                "2:00 - 3:00 PM": "row7"
+                "8:00 - 9:20 AM": "row1",
+                "9:30 - 10:50 AM": "row2",
+                "11:00 - 12:20 PM": "row3",
+                "12:30 - 1:50 PM": "row4",
+                "2:00 - 3:20 PM": "row5",
+                "3:30 - 4:50 PM": "row6"
             };
             const days = {
                 "Monday": "col2",
@@ -178,13 +177,12 @@
             const day = document.getElementById("event-day").value;
 
             const timeSlots = {
-                "8:00 - 9:00 AM": "row1",
-                "9:00 - 10:00 AM": "row2",
-                "10:00 - 11:00 AM": "row3",
-                "11:00 - 12:00 PM": "row4",
-                "12:00 - 1:00 PM": "row5",
-                "1:00 - 2:00 PM": "row6",
-                "2:00 - 3:00 PM": "row7"
+                "8:00 - 9:20 AM": "row1",
+                "9:30 - 10:50 AM": "row2",
+                "11:00 - 12:20 PM": "row3",
+                "12:30 - 1:50 PM": "row4",
+                "2:00 - 3:20 PM": "row5",
+                "3:30 - 4:50 PM": "row6"
             };
             const days = {
                 "Monday": "col2",
@@ -230,13 +228,12 @@
 
                 <label for="time-slot">Time Slot:</label>
                 <select id="course-time-slot" name="time-slot" required>
-                    <option>8:00 - 9:00 AM</option>
-                    <option>9:00 - 10:00 AM</option>
-                    <option>10:00 - 11:00 AM</option>
-                    <option>11:00 - 12:00 PM</option>
-                    <option>12:00 - 1:00 PM</option>
-                    <option>1:00 - 2:00 PM</option>
-                    <option>2:00 - 3:00 PM</option>
+                    <option>8:00 - 9:20 AM</option>
+                    <option>9:30 - 10:50 AM</option>
+                    <option>11:00 - 12:20 PM</option>
+                    <option>12:30 - 1:50 PM</option>
+                    <option>2:00 - 3:20 PM</option>
+                    <option>3:30 - 4:50 PM</option>
                 </select>
 
                 <label for="day">Day:</label>
@@ -264,13 +261,12 @@
 
                 <label for="event-time">Time Slot:</label>
                 <select id="event-time-slot" name="time-slot" required>
-                    <option>8:00 - 9:00 AM</option>
-                    <option>9:00 - 10:00 AM</option>
-                    <option>10:00 - 11:00 AM</option>
-                    <option>11:00 - 12:00 PM</option>
-                    <option>12:00 - 1:00 PM</option>
-                    <option>1:00 - 2:00 PM</option>
-                    <option>2:00 - 3:00 PM</option>
+                    <option>8:00 - 9:20 AM</option>
+                    <option>9:30 - 10:50 AM</option>
+                    <option>11:00 - 12:20 PM</option>
+                    <option>12:30 - 1:50 PM</option>
+                    <option>2:00 - 3:20 PM</option>
+                    <option>3:30 - 4:50 PM</option>
                 </select>
 
                 <label for="event-day">Day:</label>
@@ -300,7 +296,7 @@
                 <th>Friday</th>
             </tr>
             <tr id="row1">
-                <td class="time-slot">8:00 - 9:00 AM</td>
+                <td class="time-slot">8:00 - 9:20 AM</td>
                 <td id="row1col2"></td>
                 <td id="row1col3"></td>
                 <td id="row1col4"></td>
@@ -308,7 +304,7 @@
                 <td id="row1col6"></td>
             </tr>
             <tr id="row2">
-                <td class="time-slot">9:00 - 10:00 AM</td>
+                <td class="time-slot">9:30 - 10:50 AM</td>
                 <td id="row2col2"></td>
                 <td id="row2col3"></td>
                 <td id="row2col4"></td>
@@ -316,7 +312,7 @@
                 <td id="row2col6"></td>
             </tr>
             <tr id="row3">
-                <td class="time-slot">10:00 - 11:00 AM</td>
+                <td class="time-slot">11:00 - 12:20 PM</td>
                 <td id="row3col2"></td>
                 <td id="row3col3"></td>
                 <td id="row3col4"></td>
@@ -324,7 +320,7 @@
                 <td id="row3col6"></td>
             </tr>
             <tr id="row4">
-                <td class="time-slot">11:00 - 12:00 PM</td>
+                <td class="time-slot">12:30 - 1:50 PM</td>
                 <td id="row4col2"></td>
                 <td id="row4col3"></td>
                 <td id="row4col4"></td>
@@ -332,7 +328,7 @@
                 <td id="row4col6"></td>
             </tr>
             <tr id="row5">
-                <td class="time-slot">12:00 - 1:00 PM</td>
+                <td class="time-slot">2:00 - 3:20 PM</td>
                 <td id="row5col2"></td>
                 <td id="row5col3"></td>
                 <td id="row5col4"></td>
@@ -340,20 +336,12 @@
                 <td id="row5col6"></td>
             </tr>
             <tr id="row6">
-                <td class="time-slot">1:00 - 2:00 PM</td>
+                <td class="time-slot">3:30 - 4:50 PM</td>
                 <td id="row6col2"></td>
                 <td id="row6col3"></td>
                 <td id="row6col4"></td>
                 <td id="row6col5"></td>
                 <td id="row6col6"></td>
-            </tr>
-            <tr id="row7">
-                <td class="time-slot">2:00 - 3:00 PM</td>
-                <td id="row7col2"></td>
-                <td id="row7col3"></td>
-                <td id="row7col4"></td>
-                <td id="row7col5"></td>
-                <td id="row7col6"></td>
             </tr>
         </table>
     </div>
