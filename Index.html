@@ -88,18 +88,21 @@
             width: 100%;
             margin-top: 20px;
             text-align: center;
+            position: relative;
         }
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
             font-size: 1em;
+            position: relative;
         }
         .schedule-table th, .schedule-table td {
             border: 1px solid #ddd;
             padding: 15px;
             text-align: center;
             min-width: 100px;
+            position: relative;
         }
         .schedule-table th {
             background-color: #500000; /* Maroon */
@@ -121,6 +124,16 @@
         .schedule-button:hover {
             background-color: #400000;
         }
+        .course-block {
+            position: absolute;
+            background-color: #cce5ff;
+            border: 1px solid #500000;
+            padding: 10px;
+            color: #000;
+            border-radius: 5px;
+            z-index: 10;
+            box-sizing: border-box;
+        }
     </style>
     <script>
         function openTab(event, tabName) {
@@ -137,187 +150,392 @@
             event.currentTarget.classList.add("active");
         }
 
-        function addCourse() {
+       function addCourse() {
             const crn = document.getElementById("crn").value;
             const courseName = document.getElementById("course-name").value;
             const section = document.getElementById("section").value;
-            const time = document.getElementById("course-time-slot").value;
+            const startTime = document.getElementById("course-start-time").value;
+            const endTime = document.getElementById("course-end-time").value;
             const day = document.getElementById("course-day").value;
 
-            const timeSlots = {
-                "8:00 - 9:20 AM": "row1",
-                "9:30 - 10:50 AM": "row2",
-                "11:00 - 12:20 PM": "row3",
-                "12:30 - 1:50 PM": "row4",
-                "2:00 - 3:20 PM": "row5",
-                "3:30 - 4:50 PM": "row6"
-            };
-            const days = {
-                "Monday": "col2",
-                "Tuesday": "col3",
-                "Wednesday": "col4",
-                "Thursday": "col5",
-                "Friday": "col6"
-            };
-
-            const cellId = timeSlots[time] + days[day];
-            const cell = document.getElementById(cellId);
-            if (cell) {
-                cell.innerText = `${crn}\n${courseName}\nSection: ${section}`;
-                cell.style.backgroundColor = "#cce5ff";
-                cell.style.border = "1px solid #500000";
-                // Clear form fields after adding the course
-                document.getElementById("courseForm").reset();
-            } else {
-                alert("Invalid day or time slot entered.");
+            if (!startTime || !endTime) {
+                alert("Invalid time entered.");
+                return;
             }
+
+            const dayIndex = {
+                "Monday": 1,
+                "Tuesday": 2,
+                "Wednesday": 3,
+                "Thursday": 4,
+                "Friday": 5
+            }[day];
+
+            if (dayIndex === undefined) {
+                alert("Invalid day entered.");
+                return;
+            }
+
+            // Separate hours and minutes before converting
+            function separateTimeComponents(time24) {
+                let [hour, minute] = time24.split(":");
+                hour = parseInt(hour, 10);
+                minute = parseInt(minute, 10);
+                return { hour, minute };
+            }
+
+            const startTimeComponents = separateTimeComponents(startTime);
+            const endTimeComponents = separateTimeComponents(endTime);
+
+            // Convert startTime and endTime to 12-hour format with AM/PM
+
+
+            const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute);
+            const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute);
+
+            // Build the IDs for start and end times (using only the hour value)
+            const startTimeId = `row-${startTimeFormatted}`;
+            const endTimeId = `row-${endTimeFormatted}`;
+
+            // Find the start and end row elements
+            const startRow = document.getElementById(startTimeId);
+            const endRow = document.getElementById(endTimeId);
+
+            if (!startRow || !endRow) {
+                alert("Invalid time range.");
+                return;
+            }
+
+            // Calculate top position and height for the course block using rows
+            console.log((startTimeComponents.minute));
+            const topPosition = startRow.offsetTop + startRow.offsetHeight + 8+(startTimeComponents.minute);
+            const blockHeight = endRow.offsetTop - startRow.offsetTop-(startTimeComponents.minute)+(endTimeComponents.minute);
+
+            // Calculate the left position for the day
+            const scheduleTable = document.querySelector(".schedule-table");
+            const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
+            const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
+            const containerRect = scheduleTable.getBoundingClientRect();
+            const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
+
+            // Create the course block element
+            const courseBlock = document.createElement("div");
+            courseBlock.classList.add("course-block");
+            courseBlock.style.top = `${topPosition}px`;
+            courseBlock.style.left = `${leftPosition}px`;
+            courseBlock.style.width = `100px`;
+            courseBlock.style.height = `${blockHeight}px`;
+            courseBlock.innerText = `${crn}\n${courseName}\nSection: ${section}`;
+
+            // Append the course block to the schedule container
+            scheduleTable.parentElement.appendChild(courseBlock);
+            document.getElementById("courseForm").reset();
+        }
+        function convertTo12HourFormat(hour, minute) {
+                const period = hour >= 12 ? "PM" : "AM";
+            if (hour > 12) {
+                hour -= 12;
+            } else if (hour === 0) {
+                hour = 12;
+            }
+            const hourStr = hour.toString().padStart(2, '0');
+            return `${hourStr}:00 ${period}`; // Only use hour value
+        }
+        function addEvent() {
+            const eventName = document.getElementById("event-name").value;
+            const eventType = document.getElementById("event-type").value;
+            const startTime = document.getElementById("event-start-time").value;
+            const endTime = document.getElementById("event-end-time").value;
+            const day = document.getElementById("event-day").value;
+
+            if (!startTime || !endTime) {
+                alert("Invalid time entered.");
+                return;
+            }
+
+            const dayIndex = {
+                "Monday": 1,
+                "Tuesday": 2,
+                "Wednesday": 3,
+                "Thursday": 4,
+                "Friday": 5
+            }[day];
+
+            if (dayIndex === undefined) {
+                alert("Invalid day entered.");
+                return;
+            }
+
+            // Separate hours and minutes before converting
+            function separateTimeComponents(time24) {
+                let [hour, minute] = time24.split(":");
+                hour = parseInt(hour, 10);
+                minute = parseInt(minute, 10);
+                return { hour, minute };
+            }
+
+            const startTimeComponents = separateTimeComponents(startTime);
+            const endTimeComponents = separateTimeComponents(endTime);
+
+            // Convert startTime and endTime to 12-hour format with AM/PM
+            function convertTo12HourFormat(hour) {
+                const period = hour >= 12 ? "PM" : "AM";
+                if (hour > 12) {
+                    hour -= 12;
+                } else if (hour === 0) {
+                    hour = 12;
+                }
+                const hourStr = hour.toString().padStart(2, '0');
+                return `${hourStr}:00 ${period}`; // Only use hour value
+            }
+
+            const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour);
+            const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour);
+
+            // Build the IDs for start and end times (using only the hour value)
+            const startTimeId = `row-${startTimeFormatted}`;
+            const endTimeId = `row-${endTimeFormatted}`;
+
+            // Find the start and end row elements
+            const startRow = document.getElementById(startTimeId);
+            const endRow = document.getElementById(endTimeId);
+
+            if (!startRow || !endRow) {
+                alert("Invalid time range.");
+                return;
+            }
+
+            // Calculate top position and height for the event block using rows
+            const topPosition = startRow.offsetTop + startRow.offsetHeight + 10;
+            const blockHeight = endRow.offsetTop - startRow.offsetTop;
+
+            // Calculate the left position for the day
+            const scheduleTable = document.querySelector(".schedule-table");
+            const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
+            const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
+            const containerRect = scheduleTable.getBoundingClientRect();
+            const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
+
+            // Create the event block element
+            const eventBlock = document.createElement("div");
+            eventBlock.classList.add("course-block");
+            eventBlock.style.top = `${topPosition}px`;
+            eventBlock.style.left = `${leftPosition}px`;
+            eventBlock.style.width = `100px`;
+            eventBlock.style.height = `${blockHeight}px`;
+            eventBlock.innerText = `${eventName}\n${eventType}`;
+
+            // Append the event block to the schedule container
+            scheduleTable.parentElement.appendChild(eventBlock);
+            document.getElementById("eventForm").reset();
+        }
+        async function fetchAndSaveSchedule() {
+            try {
+                const crn = document.getElementById("crn").value;
+                const response = await fetch(`http://localhost:8080/api/getCourses?crn=${crn}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const course = await response.json();
+                console.log(course);
+                // Populate the form with the fetched course data
+                document.getElementById("crn").value = course.crn;
+                document.getElementById("course-name").value = course.subject + " " + course.number;
+                document.getElementById("section").value = course.section;
+                document.getElementById("course-start-time").value = convertToInputTimeFormat(course.startTime);
+                document.getElementById("course-end-time").value = convertToInputTimeFormat(course.endTime);
+                document.getElementById("course-day").value = getDayFromCourse(course.days);
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        function convertToInputTimeFormat(time) {
+            const [timePart, period] = time.split(" ");
+            let [hours, minutes] = timePart.split(":");
+            hours = parseInt(hours, 10);
+
+            if (period === "PM" && hours !== 12) {
+                hours += 12;
+            } else if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
     </script>
 </head>
 <body>
-    <header>
-        <h1>Student Schedule Builder</h1>
-    </header>
+<header>
+    <h1>Student Schedule Builder</h1>
+</header>
 
-    <div class="form-container">
-        <!-- Tabs for Courses and Events -->
-        <div class="tab-container">
-            <button class="tab-button active" onclick="openTab(event, 'Courses')">Add Course</button>
-            <button class="tab-button" onclick="openTab(event, 'Events')">Add Event</button>
-        </div>
-
-        <!-- Tab content for Courses -->
-        <div id="Courses" class="tab-content active">
-            <h2>Add a New Course</h2>
-            <form id="courseForm">
-                <label for="crn">CRN:</label>
-                <input type="text" id="crn" name="crn" required>
-
-                <label for="course-name">Course Name:</label>
-                <input type="text" id="course-name" name="course-name" required>
-
-                <label for="section">Section:</label>
-                <input type="text" id="section" name="section" required>
-
-                <label for="time-slot">Time Slot:</label>
-                <select id="course-time-slot" name="time-slot" required>
-                    <option>8:00 - 9:20 AM</option>
-                    <option>9:30 - 10:50 AM</option>
-                    <option>11:00 - 12:20 PM</option>
-                    <option>12:30 - 1:50 PM</option>
-                    <option>2:00 - 3:20 PM</option>
-                    <option>3:30 - 4:50 PM</option>
-                </select>
-
-                <label for="day">Day:</label>
-                <select id="course-day" name="day" required>
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                </select>
-
-                <button type="button" onclick="addCourse()">Add Course</button>
-            </form>
-        </div>
-
-        <!-- Tab content for Events -->
-        <div id="Events" class="tab-content">
-            <h2>Add a New Event</h2>
-            <form id="eventForm">
-                <label for="event-name">Event Name:</label>
-                <input type="text" id="event-name" name="event-name" required>
-
-                <label for="event-type">Event Type:</label>
-                <input type="text" id="event-type" name="event-type" required>
-
-                <label for="event-time">Time Slot:</label>
-                <select id="event-time-slot" name="time-slot" required>
-                    <option>8:00 - 9:20 AM</option>
-                    <option>9:30 - 10:50 AM</option>
-                    <option>11:00 - 12:20 PM</option>
-                    <option>12:30 - 1:50 PM</option>
-                    <option>2:00 - 3:20 PM</option>
-                    <option>3:30 - 4:50 PM</option>
-                </select>
-
-                <label for="event-day">Day:</label>
-                <select id="event-day" name="day" required>
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                </select>
-
-                <button type="button" onclick="addEvent()">Add Event</button>
-            </form>
-        </div>
+<div class="form-container">
+    <!-- Tabs for Courses and Events -->
+    <div class="tab-container">
+        <button class="tab-button active" onclick="openTab(event, 'Courses')">Add Course</button>
+        <button class="tab-button" onclick="openTab(event, 'Events')">Add Event</button>
     </div>
 
-    <!-- Schedule Table -->
-    <div class="schedule-container">
-        <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
-        <table class="schedule-table">
-            <tr>
-                <th>Time</th>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-            </tr>
-            <tr id="row1">
-                <td class="time-slot">8:00 - 9:20 AM</td>
-                <td id="row1col2"></td>
-                <td id="row1col3"></td>
-                <td id="row1col4"></td>
-                <td id="row1col5"></td>
-                <td id="row1col6"></td>
-            </tr>
-            <tr id="row2">
-                <td class="time-slot">9:30 - 10:50 AM</td>
-                <td id="row2col2"></td>
-                <td id="row2col3"></td>
-                <td id="row2col4"></td>
-                <td id="row2col5"></td>
-                <td id="row2col6"></td>
-            </tr>
-            <tr id="row3">
-                <td class="time-slot">11:00 - 12:20 PM</td>
-                <td id="row3col2"></td>
-                <td id="row3col3"></td>
-                <td id="row3col4"></td>
-                <td id="row3col5"></td>
-                <td id="row3col6"></td>
-            </tr>
-            <tr id="row4">
-                <td class="time-slot">12:30 - 1:50 PM</td>
-                <td id="row4col2"></td>
-                <td id="row4col3"></td>
-                <td id="row4col4"></td>
-                <td id="row4col5"></td>
-                <td id="row4col6"></td>
-            </tr>
-            <tr id="row5">
-                <td class="time-slot">2:00 - 3:20 PM</td>
-                <td id="row5col2"></td>
-                <td id="row5col3"></td>
-                <td id="row5col4"></td>
-                <td id="row5col5"></td>
-                <td id="row5col6"></td>
-            </tr>
-            <tr id="row6">
-                <td class="time-slot">3:30 - 4:50 PM</td>
-                <td id="row6col2"></td>
-                <td id="row6col3"></td>
-                <td id="row6col4"></td>
-                <td id="row6col5"></td>
-                <td id="row6col6"></td>
-            </tr>
-        </table>
+    <!-- Tab content for Courses -->
+    <div id="Courses" class="tab-content active">
+        <h2>Add a New Course</h2>
+        <form id="courseForm">
+            <label for="crn">CRN:</label>
+            <input type="text" id="crn" name="crn" required>
+
+            <label for="course-name">Course Name:</label>
+            <input type="text" id="course-name" name="course-name" required>
+
+            <label for="section">Section:</label>
+            <input type="text" id="section" name="section" required>
+
+            <label for="course-start-time">Start Time:</label>
+            <input type="time" id="course-start-time" name="start-time" required>
+
+            <label for="course-end-time">End Time:</label>
+            <input type="time" id="course-end-time" name="end-time" required>
+
+            <label for="course-day">Day:</label>
+            <select id="course-day" name="day" required>
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+            </select>
+
+            <button type="button" onclick="addCourse()">Add Course</button>
+        </form>
     </div>
+
+    <!-- Tab content for Events -->
+    <div id="Events" class="tab-content">
+        <h2>Add a New Event</h2>
+        <form id="eventForm">
+            <label for="event-name">Event Name:</label>
+            <input type="text" id="event-name" name="event-name" required>
+
+            <label for="event-type">Event Type:</label>
+            <input type="text" id="event-type" name="event-type" required>
+
+            <label for="event-start-time">Start Time:</label>
+            <input type="time" id="event-start-time" name="start-time" required>
+
+            <label for="event-end-time">End Time:</label>
+            <input type="time" id="event-end-time" name="end-time" required>
+
+            <label for="event-day">Day:</label>
+            <select id="event-day" name="day" required>
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+            </select>
+
+            <button type="button" onclick="addEvent()">Add Event</button>
+        </form>
+    </div>
+</div>
+
+<!-- Schedule Table -->
+<div class="schedule-container">
+    <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
+    <table class="schedule-table">
+        <thead>
+        <tr>
+            <th>Time</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+        </tr>
+        </thead>
+        <tbody id="scheduleTableBody">
+        <tr id="row-08:00 AM">
+            <td class="time-slot">08:00 AM</td>
+            <td id="row-08:00 AM-col1"></td>
+            <td id="row-08:00 AM-col2"></td>
+            <td id="row-08:00 AM-col3"></td>
+            <td id="row-08:00 AM-col4"></td>
+            <td id="row-08:00 AM-col5"></td>
+        </tr>
+        <tr id="row-09:00 AM">
+            <td class="time-slot">09:00 AM</td>
+            <td id="row-09:00 AM-col1"></td>
+            <td id="row-09:00 AM-col2"></td>
+            <td id="row-09:00 AM-col3"></td>
+            <td id="row-09:00 AM-col4"></td>
+            <td id="row-09:00 AM-col5"></td>
+        </tr>
+        <tr id="row-10:00 AM">
+            <td class="time-slot">10:00 AM</td>
+            <td id="row-10:00 AM-col1"></td>
+            <td id="row-10:00 AM-col2"></td>
+            <td id="row-10:00 AM-col3"></td>
+            <td id="row-10:00 AM-col4"></td>
+            <td id="row-10:00 AM-col5"></td>
+        </tr>
+        <tr id="row-11:00 AM">
+            <td class="time-slot">11:00 AM</td>
+            <td id="row-11:00 AM-col1"></td>
+            <td id="row-11:00 AM-col2"></td>
+            <td id="row-11:00 AM-col3"></td>
+            <td id="row-11:00 AM-col4"></td>
+            <td id="row-11:00 AM-col5"></td>
+        </tr>
+        <tr id="row-12:00 PM">
+            <td class="time-slot">12:00 PM</td>
+            <td id="row-12:00 PM-col1"></td>
+            <td id="row-12:00 PM-col2"></td>
+            <td id="row-12:00 PM-col3"></td>
+            <td id="row-12:00 PM-col4"></td>
+            <td id="row-12:00 PM-col5"></td>
+        </tr>
+        <tr id="row-01:00 PM">
+            <td class="time-slot">1:00 PM</td>
+            <td id="row-01:00 PM-col1"></td>
+            <td id="row-01:00 PM-col2"></td>
+            <td id="row-01:00 PM-col3"></td>
+            <td id="row-01:00 PM-col4"></td>
+            <td id="row-01:00 PM-col5"></td>
+        </tr>
+        <tr id="row-02:00 PM">
+            <td class="time-slot">2:00 PM</td>
+            <td id="row-02:00 PM-col1"></td>
+            <td id="row-02:00 PM-col2"></td>
+            <td id="row-02:00 PM-col3"></td>
+            <td id="row-02:00 PM-col4"></td>
+            <td id="row-02:00 PM-col5"></td>
+        </tr>
+        <tr id="row-03:00 PM">
+            <td class="time-slot">3:00 PM</td>
+            <td id="row-03:00 PM-col1"></td>
+            <td id="row-03:00 PM-col2"></td>
+            <td id="row-03:00 PM-col3"></td>
+            <td id="row-03:00 PM-col4"></td>
+            <td id="row-03:00 PM-col5"></td>
+        </tr>
+        <tr id="row-04:00 PM">
+            <td class="time-slot">4:00 PM</td>
+            <td id="row-04:00 PM-col1"></td>
+            <td id="row-04:00 PM-col2"></td>
+            <td id="row-04:00 PM-col3"></td>
+            <td id="row-04:00 PM-col4"></td>
+            <td id="row-04:00 PM-col5"></td>
+        </tr>
+        <tr id="row-05:00 PM">
+            <td class="time-slot">5:00 PM</td>
+            <td id="row-05:00 PM-col1"></td>
+            <td id="row-05:00 PM-col2"></td>
+            <td id="row-05:00 PM-col3"></td>
+            <td id="row-05:00 PM-col4"></td>
+            <td id="row-05:00 PM-col5"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>
-
