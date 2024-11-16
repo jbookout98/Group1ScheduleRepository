@@ -3,33 +3,46 @@ package org.example;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") // Allow access from all origins since it is local
 public class CourseController {
 
+    private List<Course> courses; // Correct: Should be List<Course>
+
+    // Constructor to load courses once at startup
+    public CourseController() {
+        System.out.println("Initializing CourseController and loading courses from CSV.");
+        courses = CSVCourseReader.readCoursesFromCSV("courses.csv"); // Correct assignment
+        System.out.println("Loaded " + courses.size() + " courses.");
+    }
+
     @GetMapping("/getCourses")
     public Course getCourses(@RequestParam(required = false) String crn) {
-
-        String scheduleText = PDFReader.extractTextFromPDF("Spring2024.pdf");
-
-        List<Course> courses = ScheduleParser.parseCourses(scheduleText);
         System.out.println("Running the Course Controller");
-        // Print the full schedule for debugging
-        Course toReturnCourse;
-        // If a CRN is provided, filter the courses by CRN
-        if (crn != null && !crn.isEmpty()) {
-            courses = courses.stream()
-                    .filter(course -> course.getCrn().equals(crn))
-                    .collect(Collectors.toList());
+
+        if (crn != null && !crn.trim().isEmpty()) {
+            // Find the first course that matches the given CRN
+            Course filteredCourse = courses.stream()
+                    .filter(course -> course.getCrn().trim().equalsIgnoreCase(crn.trim()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (filteredCourse == null) {
+                System.out.println("No course found with CRN: " + crn);
+            } else {
+                System.out.println("Filtered Course: " + filteredCourse);
+            }
+
+            return filteredCourse;
         }
-        System.out.println(courses.get(0));
-        return courses.get(0);
+
+        // If no CRN is provided, return null or handle it as needed.
+        System.out.println("No CRN provided, returning null.");
+        return null;
     }
+
+
 }

@@ -108,10 +108,23 @@
             background-color: #500000; /* Maroon */
             color: #FFD700; /* Gold */
         }
-        .schedule-table .time-slot {
-            background-color: #f1f1f1;
+        /* Updated styles for aligning the time values to be on the row lines */
+        .schedule-table th.time-slot {
+            position: relative;
+            padding: 0;
+            height: 60px; /* Adjust the height to suit the row size */
+        }
+
+        .schedule-table th.time-slot div {
+            position: absolute;
+            bottom: 0; /* Align the time label with the bottom border of the row */
+            transform: translateY(50%); /* Slight adjustment to center on the line */
+            width: 100%;
+            text-align: right;
+            padding-right: 10px; /* Add a bit of space from the border */
             font-weight: bold;
         }
+
         .schedule-button {
             background-color: #500000; /* Maroon */
             color: #FFD700; /* Gold */
@@ -136,6 +149,14 @@
         }
     </style>
     <script>
+        const scheduleData = {
+            Monday: [],
+            Tuesday: [],
+            Wednesday: [],
+            Thursday: [],
+            Friday: []
+        };
+
         function openTab(event, tabName) {
             var i, tabContent, tabButtons;
             tabContent = document.getElementsByClassName("tab-content");
@@ -150,13 +171,14 @@
             event.currentTarget.classList.add("active");
         }
 
-       function addCourse() {
+        function addCourse() {
             const crn = document.getElementById("crn").value;
             const courseName = document.getElementById("course-name").value;
             const section = document.getElementById("section").value;
             const startTime = document.getElementById("course-start-time").value;
             const endTime = document.getElementById("course-end-time").value;
             const day = document.getElementById("course-day").value;
+            const location = document.getElementById("course-location").value;
 
             if (!startTime || !endTime) {
                 alert("Invalid time entered.");
@@ -188,8 +210,6 @@
             const endTimeComponents = separateTimeComponents(endTime);
 
             // Convert startTime and endTime to 12-hour format with AM/PM
-
-
             const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute);
             const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute);
 
@@ -206,10 +226,19 @@
                 return;
             }
 
+            // Add the course to scheduleData if no conflicts found
+            scheduleData[day].push({
+                crn: crn,
+                courseName: courseName,
+                section: section,
+                startTime: startTime,
+                endTime: endTime,
+                location: location
+            });
+
             // Calculate top position and height for the course block using rows
-            console.log((startTimeComponents.minute));
-            const topPosition = startRow.offsetTop + startRow.offsetHeight + 8+(startTimeComponents.minute);
-            const blockHeight = endRow.offsetTop - startRow.offsetTop-(startTimeComponents.minute)+(endTimeComponents.minute);
+            const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
+            const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
 
             // Calculate the left position for the day
             const scheduleTable = document.querySelector(".schedule-table");
@@ -225,28 +254,20 @@
             courseBlock.style.left = `${leftPosition}px`;
             courseBlock.style.width = `100px`;
             courseBlock.style.height = `${blockHeight}px`;
-            courseBlock.innerText = `${crn}\n${courseName}\nSection: ${section}`;
+            courseBlock.innerText = `${crn}\n${courseName}\nSection: ${section}\nLocation: ${location}`;
 
             // Append the course block to the schedule container
             scheduleTable.parentElement.appendChild(courseBlock);
             document.getElementById("courseForm").reset();
         }
-        function convertTo12HourFormat(hour, minute) {
-                const period = hour >= 12 ? "PM" : "AM";
-            if (hour > 12) {
-                hour -= 12;
-            } else if (hour === 0) {
-                hour = 12;
-            }
-            const hourStr = hour.toString().padStart(2, '0');
-            return `${hourStr}:00 ${period}`; // Only use hour value
-        }
+
         function addEvent() {
             const eventName = document.getElementById("event-name").value;
             const eventType = document.getElementById("event-type").value;
             const startTime = document.getElementById("event-start-time").value;
             const endTime = document.getElementById("event-end-time").value;
             const day = document.getElementById("event-day").value;
+            const location = document.getElementById("event-location").value;
 
             if (!startTime || !endTime) {
                 alert("Invalid time entered.");
@@ -278,17 +299,6 @@
             const endTimeComponents = separateTimeComponents(endTime);
 
             // Convert startTime and endTime to 12-hour format with AM/PM
-            function convertTo12HourFormat(hour) {
-                const period = hour >= 12 ? "PM" : "AM";
-                if (hour > 12) {
-                    hour -= 12;
-                } else if (hour === 0) {
-                    hour = 12;
-                }
-                const hourStr = hour.toString().padStart(2, '0');
-                return `${hourStr}:00 ${period}`; // Only use hour value
-            }
-
             const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour);
             const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour);
 
@@ -321,9 +331,9 @@
             eventBlock.classList.add("course-block");
             eventBlock.style.top = `${topPosition}px`;
             eventBlock.style.left = `${leftPosition}px`;
-            eventBlock.style.width = `100px`;
+            eventBlock.style.width = `120px`;
             eventBlock.style.height = `${blockHeight}px`;
-            eventBlock.innerText = `${eventName}\n${eventType}`;
+            eventBlock.innerText = `${eventName}\n${eventType}\nLocation: ${location}`;
 
             // Append the event block to the schedule container
             scheduleTable.parentElement.appendChild(eventBlock);
@@ -332,7 +342,9 @@
         async function fetchAndSaveSchedule() {
             try {
                 const crn = document.getElementById("crn").value;
+                // Make sure the URL is wrapped in quotes to treat it as a string
                 const response = await fetch(`http://localhost:8080/api/getCourses?crn=${crn}`);
+
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -349,7 +361,6 @@
                 console.error('There was a problem with the fetch operation:', error);
             }
         }
-
         function convertToInputTimeFormat(time) {
             const [timePart, period] = time.split(" ");
             let [hours, minutes] = timePart.split(":");
@@ -362,6 +373,22 @@
             }
 
             return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+
+        function getDayFromCourse(days) {
+            // Assuming days is in a format like "Monday", return the correct day
+            return days;
+        }
+
+        function convertTo12HourFormat(hour, minute) {
+            const period = hour >= 12 ? "PM" : "AM";
+            if (hour > 12) {
+                hour -= 12;
+            } else if (hour === 0) {
+                hour = 12;
+            }
+            const hourStr = hour.toString().padStart(2, '0');
+            return `${hourStr}:00 ${period}`; // Only use hour value
         }
     </script>
 </head>
@@ -405,6 +432,9 @@
                 <option>Friday</option>
             </select>
 
+            <label for="course-location">Location:</label>
+            <input type="text" id="course-location" name="location" required>
+
             <button type="button" onclick="addCourse()">Add Course</button>
         </form>
     </div>
@@ -434,6 +464,9 @@
                 <option>Friday</option>
             </select>
 
+            <label for="event-location">Location:</label>
+            <input type="text" id="event-location" name="location" required>
+
             <button type="button" onclick="addEvent()">Add Event</button>
         </form>
     </div>
@@ -441,8 +474,9 @@
 
 <!-- Schedule Table -->
 <div class="schedule-container">
-    <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
-    <table class="schedule-table">
+
+        <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
+        <table class="schedule-table">
         <thead>
         <tr>
             <th>Time</th>
