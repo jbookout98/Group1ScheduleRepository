@@ -149,6 +149,7 @@
         }
     </style>
     <script>
+        const TRAVEL_TIME_BETWEEN_LOCATIONS = 90;
         const scheduleData = {
             Monday: [],
             Tuesday: [],
@@ -225,7 +226,14 @@
                 alert("Invalid time range.");
                 return;
             }
-
+            if (isTimeConflict(day, startTime, endTime)) {
+                alert("Time conflict detected with an existing course or event. Please choose a different time.");
+                return;
+            }
+            if (checkLocationConflict(day, startTime, location)) {
+                alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
+                return;
+            }
             // Add the course to scheduleData if no conflicts found
             scheduleData[day].push({
                 crn: crn,
@@ -273,7 +281,14 @@
                 alert("Invalid time entered.");
                 return;
             }
-
+            if (isTimeConflict(day, startTime, endTime)) {
+                alert("Time conflict detected with an existing course or event. Please choose a different time.");
+                return;
+            }
+            if (checkLocationConflict(day, startTime, location)) {
+                alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
+                return;
+            }
             const dayIndex = {
                 "Monday": 1,
                 "Tuesday": 2,
@@ -286,7 +301,13 @@
                 alert("Invalid day entered.");
                 return;
             }
-
+            scheduleData[day].push({
+                eventName: eventName,
+                eventType: eventType,
+                startTime: startTime,
+                endTime: endTime,
+                location: location
+            });
             // Separate hours and minutes before converting
             function separateTimeComponents(time24) {
                 let [hour, minute] = time24.split(":");
@@ -361,6 +382,96 @@
                 console.error('There was a problem with the fetch operation:', error);
             }
         }
+
+        //Helper Functions
+
+        function checkLocationConflict(day, startTime, newLocation) {
+            const newStartMinutes = convertToMinutes(startTime);
+            let conflictFound = false;
+
+            console.log(`Checking for location conflicts on ${day} for a new event at ${newLocation} starting at ${startTime} (${newStartMinutes} minutes)`);
+
+            for (let entry of scheduleData[day]) {
+                const entryStartMinutes = convertToMinutes(entry.startTime);
+                const entryEndMinutes = convertToMinutes(entry.endTime);
+
+                console.log(`Existing entry: ${entry.courseName || entry.eventName}, Location: ${entry.location}, Start Time: ${entry.startTime} (${entryStartMinutes} minutes), End Time: ${entry.endTime} (${entryEndMinutes} minutes)`);
+
+                // Check if the new location and existing entry location differ
+                if (entry.location !== newLocation) {
+                    console.log(`Locations are different: ${entry.location} vs ${newLocation}`);
+
+                    // Ensure it's specifically comparing "San Marcos" and "Round Rock"
+                    if (
+                        (entry.location === "San Marcos" && newLocation === "Round Rock") ||
+                        (entry.location === "Round Rock" && newLocation === "San Marcos")
+                    ) {
+                        // Calculate the absolute time gap for simplicity
+                        const timeGap = Math.abs(newStartMinutes - entryEndMinutes);
+
+                        // Check for conflicts in two scenarios:
+                        // 1. New event starts before the existing one ends
+                        // 2. Travel time requirement not met (less than 90 minutes)
+                        if (newStartMinutes < entryEndMinutes || timeGap < TRAVEL_TIME_BETWEEN_LOCATIONS) {
+                            console.log(`Conflict detected with ${entry.courseName || entry.eventName} due to insufficient travel time or time overlap`);
+                            conflictFound = true;
+                            break;
+                        } else {
+                            console.log(`No conflict detected based on travel time. Required gap is ${TRAVEL_TIME_BETWEEN_LOCATIONS} minutes, but found ${timeGap} minutes.`);
+                        }
+                    } else {
+                        console.log(`Locations are different but not specifically "San Marcos" and "Round Rock". No travel time check needed.`);
+                    }
+                } else {
+                    console.log(`Locations are the same (${entry.location}). No conflict based on location.`);
+                }
+            }
+
+
+            return conflictFound;
+        }
+
+
+        function isTimeConflict(day, startTime, endTime) {
+            // Convert times to a comparable format (in minutes since midnight)
+            const startMinutes = convertToMinutes(startTime);
+            const endMinutes = convertToMinutes(endTime);
+
+
+            for (let entry of scheduleData[day]) {
+                const entryStartMinutes = convertToMinutes(entry.startTime);
+                const entryEndMinutes = convertToMinutes(entry.endTime);
+
+
+                // Check for overlap
+                if (!(endMinutes <= entryStartMinutes || startMinutes >= entryEndMinutes)) {
+                    return true;
+                }
+            }
+
+            console.log("No conflicts detected.");
+            return false;
+        }
+
+        // Helper function to convert time in "HH:MM AM/PM" format to minutes since midnight
+        function convertToMinutes(time) {
+            let [timePart, period] = time.split(" ");
+            let [hours, minutes] = timePart.split(":");
+
+            hours = parseInt(hours, 10);
+            minutes = parseInt(minutes, 10);
+
+            if (period === "PM" && hours !== 12) {
+                hours += 12;
+            } else if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            const totalMinutes = hours * 60 + minutes;
+
+            return totalMinutes;
+        }
+
         function convertToInputTimeFormat(time) {
             const [timePart, period] = time.split(" ");
             let [hours, minutes] = timePart.split(":");
@@ -422,7 +533,6 @@
 
             <label for="course-end-time">End Time:</label>
             <input type="time" id="course-end-time" name="end-time" required>
-
             <label for="course-day">Day:</label>
             <select id="course-day" name="day" required>
                 <option>Monday</option>
@@ -433,7 +543,10 @@
             </select>
 
             <label for="course-location">Location:</label>
-            <input type="text" id="course-location" name="location" required>
+            <select id="course-location" name="course-location" required>
+                <option value="San Marcos">San Marcos</option>
+                <option value="Round Rock">Round Rock</option>
+            </select>
 
             <button type="button" onclick="addCourse()">Add Course</button>
         </form>
@@ -465,18 +578,22 @@
             </select>
 
             <label for="event-location">Location:</label>
-            <input type="text" id="event-location" name="location" required>
+            <select id="event-location" name="event-location" required>
+                <option value="San Marcos">San Marcos</option>
+                <option value="Round Rock">Round Rock</option>
+            </select>
 
             <button type="button" onclick="addEvent()">Add Event</button>
         </form>
     </div>
 </div>
 
+
 <!-- Schedule Table -->
 <div class="schedule-container">
 
-        <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
-        <table class="schedule-table">
+    <button class="schedule-button" onclick="fetchAndSaveSchedule()">Fetch and Save Schedule</button>
+    <table class="schedule-table">
         <thead>
         <tr>
             <th>Time</th>
@@ -568,6 +685,44 @@
             <td id="row-05:00 PM-col4"></td>
             <td id="row-05:00 PM-col5"></td>
         </tr>
+        <tr id="row-06:00 PM">
+            <td class="time-slot">6:00 PM</td>
+            <td id="row-06:00 PM-col1"></td>
+            <td id="row-06:00 PM-col2"></td>
+            <td id="row-06:00 PM-col3"></td>
+            <td id="row-06:00 PM-col4"></td>
+            <td id="row-06:00 PM-col5"></td>
+        <tr id="row-07:00 PM">
+            <td class="time-slot">07:00 PM</td>
+            <td id="row-07:00 PM-col1"></td>
+            <td id="row-07:00 PM-col2"></td>
+            <td id="row-07:00 PM-col3"></td>
+            <td id="row-07:00 PM-col4"></td>
+            <td id="row-07:00 PM-col5"></td>
+        </tr>
+        <tr id="row-08:00 PM">
+            <td class="time-slot">08:00 PM</td>
+            <td id="row-08:00 PM-col1"></td>
+            <td id="row-08:00 PM-col2"></td>
+            <td id="row-08:00 PM-col3"></td>
+            <td id="row-08:00 PM-col4"></td>
+            <td id="row-08:00 PM-col5"></td>
+        </tr>
+        <tr id="row-09:00 PM">
+            <td class="time-slot">09:00 PM</td>
+            <td id="row-09:00 PM-col1"></td>
+            <td id="row-09:00 PM-col2"></td>
+            <td id="row-09:00 PM-col3"></td>
+            <td id="row-09:00 PM-col4"></td>
+            <td id="row-09:00 PM-col5"></td>
+        </tr>
+        <tr id="row-9:30 PM">
+            <td class="time-slot">09:30 PM</td>
+            <td id="row-9:30 PM-col1"></td>
+            <td id="row-9:30 PM-col2"></td>
+            <td id="row-9:30 PM-col3"></td>
+            <td id="row-9:30 PM-col4"></td>
+            <td id="row-9:30 PM-col5"></td>
         </tbody>
     </table>
 </div>
