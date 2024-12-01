@@ -138,6 +138,7 @@
             background-color: #400000;
         }
         .course-block {
+            position: relative;
             position: absolute;
             background-color: #cce5ff;
             border: 1px solid #500000;
@@ -147,6 +148,18 @@
             z-index: 10;
             box-sizing: border-box;
         }
+        .remove-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        background: url('remove.png') no-repeat center center;
+        background-size: contain;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+    }
     </style>
     <script>
         const TRAVEL_TIME_BETWEEN_LOCATIONS = 90;
@@ -256,13 +269,13 @@
             const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
 
             // Create the course block element
-            const courseBlock = document.createElement("div");
+            const courseBlock = createBlockElement(crn, courseName, section, day, startTime, endTime, location);
             courseBlock.classList.add("course-block");
+
             courseBlock.style.top = `${topPosition}px`;
             courseBlock.style.left = `${leftPosition}px`;
             courseBlock.style.width = `100px`;
             courseBlock.style.height = `${blockHeight}px`;
-            courseBlock.innerText = `${crn}\n${courseName}\nSection: ${section}\nLocation: ${location}`;
 
             // Append the course block to the schedule container
             scheduleTable.parentElement.appendChild(courseBlock);
@@ -347,19 +360,58 @@
             const containerRect = scheduleTable.getBoundingClientRect();
             const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
 
-            // Create the event block element
-            const eventBlock = document.createElement("div");
-            eventBlock.classList.add("course-block");
+           const eventBlock = createBlockElement(eventName, eventType, '', day, startTime, endTime, location);
+
+            // Set the positioning and size for the block
             eventBlock.style.top = `${topPosition}px`;
             eventBlock.style.left = `${leftPosition}px`;
             eventBlock.style.width = `120px`;
             eventBlock.style.height = `${blockHeight}px`;
-            eventBlock.innerText = `${eventName}\n${eventType}\nLocation: ${location}`;
 
             // Append the event block to the schedule container
             scheduleTable.parentElement.appendChild(eventBlock);
             document.getElementById("eventForm").reset();
+
+
         }
+
+        function createBlockElement(name, type, section, day, startTime, endTime, location) {
+            const block = document.createElement("div");
+            block.classList.add("course-block");
+
+            // Add the text content for the block
+            block.innerText = `${name}\n${type ? type : ''}\n${section ? 'Section: ' + section : ''}\nLocation: ${location}\n${startTime} - ${endTime}`;
+
+            // Create and add the remove button
+            const removeButton = document.createElement("button");
+            removeButton.classList.add("remove-button");
+            removeButton.innerText = "X"; // Simple "X" as the button label
+            removeButton.onclick = function () {
+                removeEntry(day, name, startTime, endTime);
+                block.remove();
+            };
+
+            // Append the remove button to the block
+            block.appendChild(removeButton);
+
+            return block;
+        }
+
+        function removeEntry(day, name, startTime, endTime) {
+            const daySchedule = scheduleData[day];
+            for (let i = 0; i < daySchedule.length; i++) {
+                if (
+                    (daySchedule[i].courseName === name || daySchedule[i].eventName === name) &&
+                    daySchedule[i].startTime === startTime &&
+                    daySchedule[i].endTime === endTime
+                ) {
+                    daySchedule.splice(i, 1); // Remove the entry from scheduleData
+                    break;
+                }
+            }
+        }
+
+
         async function fetchAndSaveSchedule() {
             try {
                 const crn = document.getElementById("crn").value;
@@ -728,3 +780,4 @@
 </div>
 </body>
 </html>
+Add a remove button to cousres and events. The remove button should remove the blocks from the schedule.
