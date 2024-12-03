@@ -187,6 +187,7 @@
 
 
         function addCourse() {
+
             const crn = document.getElementById("crn").value;
             const courseName = document.getElementById("course-name").value;
             const section = document.getElementById("section").value;
@@ -599,6 +600,7 @@
         }
 
         function convertTo12HourFormat(hour, minute) {
+
             // Debugging log: log the original hour and minute
             console.log("Input hour:", hour, "Input minute:", minute);
 
@@ -632,6 +634,7 @@
                 .map((char, index) => (char !== "_" ? daysMap[char] : null)) // Map characters to days
                 .filter(day => day !== null); // Remove null values
         }
+
 
     </script>
 </head>
