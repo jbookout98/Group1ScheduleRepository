@@ -186,103 +186,109 @@
         }
 
         function addCourse() {
-            const crn = document.getElementById("crn").value;
-            const courseName = document.getElementById("course-name").value;
-            const section = document.getElementById("section").value;
-            const startTime = document.getElementById("course-start-time").value;
-            const endTime = document.getElementById("course-end-time").value;
-            const day = document.getElementById("course-day").value;
-            const location = document.getElementById("course-location").value;
+    const crn = document.getElementById("crn").value;
+    const courseName = document.getElementById("course-name").value;
+    const section = document.getElementById("section").value;
+    const startTime = document.getElementById("course-start-time").value;
+    const endTime = document.getElementById("course-end-time").value;
+    const days = Array.isArray(document.getElementById("course-day").selectedOptions)
+        ? Array.from(document.getElementById("course-day").selectedOptions).map(option => option.value)
+        : [document.getElementById("course-day").value]; // Handles both single and multiple selections
+    const location = document.getElementById("course-location").value;
 
-            if (!startTime || !endTime) {
-                alert("Invalid time entered.");
-                return;
-            }
+    if (!startTime || !endTime) {
+        alert("Invalid time entered.");
+        return;
+    }
 
-            const dayIndex = {
-                "Monday": 1,
-                "Tuesday": 2,
-                "Wednesday": 3,
-                "Thursday": 4,
-                "Friday": 5
-            }[day];
+    days.forEach(day => {
+        const dayIndex = {
+            "Monday": 1,
+            "Tuesday": 2,
+            "Wednesday": 3,
+            "Thursday": 4,
+            "Friday": 5
+        }[day];
 
-            if (dayIndex === undefined) {
-                alert("Invalid day entered.");
-                return;
-            }
-
-            // Separate hours and minutes before converting
-            function separateTimeComponents(time24) {
-                let [hour, minute] = time24.split(":");
-                hour = parseInt(hour, 10);
-                minute = parseInt(minute, 10);
-                return { hour, minute };
-            }
-
-            const startTimeComponents = separateTimeComponents(startTime);
-            const endTimeComponents = separateTimeComponents(endTime);
-
-            // Convert startTime and endTime to 12-hour format with AM/PM
-            const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute);
-            const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute);
-
-            // Build the IDs for start and end times (using only the hour value)
-            const startTimeId = `row-${startTimeFormatted}`;
-            const endTimeId = `row-${endTimeFormatted}`;
-
-            // Find the start and end row elements
-            const startRow = document.getElementById(startTimeId);
-            const endRow = document.getElementById(endTimeId);
-
-            if (!startRow || !endRow) {
-                alert("Invalid time range.");
-                return;
-            }
-            if (isTimeConflict(day, startTime, endTime)) {
-                alert("Time conflict detected with an existing course or event. Please choose a different time.");
-                return;
-            }
-            if (checkLocationConflict(day, startTime, location)) {
-                alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
-                return;
-            }
-            // Add the course to scheduleData if no conflicts found
-            scheduleData[day].push({
-                crn: crn,
-                courseName: courseName,
-                section: section,
-                startTime: startTime,
-                endTime: endTime,
-                location: location
-            });
-
-            // Calculate top position and height for the course block using rows
-            const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
-            const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
-
-            // Calculate the left position for the day
-            const scheduleTable = document.querySelector(".schedule-table");
-            const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
-            const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
-            const containerRect = scheduleTable.getBoundingClientRect();
-            const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
-
-            // Create the course block element
-            const courseBlock = createBlockElement(courseName, "course", section, day, startTime, endTime, location);
-
-
-            courseBlock.classList.add("course-block");
-
-            courseBlock.style.top = `${topPosition}px`;
-            courseBlock.style.left = `${leftPosition}px`;
-            courseBlock.style.width = `100px`;
-            courseBlock.style.height = `${blockHeight}px`;
-
-            // Append the course block to the schedule container
-            scheduleTable.parentElement.appendChild(courseBlock);
-            document.getElementById("courseForm").reset();
+        if (dayIndex === undefined) {
+            alert("Invalid day entered.");
+            return;
         }
+
+        // Separate hours and minutes before converting
+        function separateTimeComponents(time24) {
+            let [hour, minute] = time24.split(":");
+            hour = parseInt(hour, 10);
+            minute = parseInt(minute, 10);
+            return { hour, minute };
+        }
+
+        const startTimeComponents = separateTimeComponents(startTime);
+        const endTimeComponents = separateTimeComponents(endTime);
+
+        // Convert startTime and endTime to 12-hour format with AM/PM
+        const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute);
+        const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute);
+
+        // Build the IDs for start and end times (using only the hour value)
+        const startTimeId = `row-${startTimeFormatted}`;
+        const endTimeId = `row-${endTimeFormatted}`;
+
+        // Find the start and end row elements
+        const startRow = document.getElementById(startTimeId);
+        const endRow = document.getElementById(endTimeId);
+
+        if (!startRow || !endRow) {
+            alert("Invalid time range.");
+            return;
+        }
+        if (isTimeConflict(day, startTime, endTime)) {
+            alert("Time conflict detected with an existing course or event. Please choose a different time.");
+            return;
+        }
+        if (checkLocationConflict(day, startTime, location)) {
+            alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
+            return;
+        }
+        // Add the course to scheduleData if no conflicts found
+        scheduleData[day].push({
+            crn: crn,
+            courseName: courseName,
+            section: section,
+            startTime: startTime,
+            endTime: endTime,
+            location: location
+        });
+
+        // Calculate top position and height for the course block using rows
+        const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
+        const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
+
+        // Calculate the left position for the day
+        const scheduleTable = document.querySelector(".schedule-table");
+        const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
+        const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
+        const containerRect = scheduleTable.getBoundingClientRect();
+        const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
+
+        // Create the course block element
+        const courseBlock = createBlockElement(courseName, "course", section, day, startTime, endTime, location);
+
+        courseBlock.classList.add("course-block");
+
+        courseBlock.style.top = `${topPosition}px`;
+        courseBlock.style.left = `${leftPosition}px`;
+        courseBlock.style.width = `100px`;
+        courseBlock.style.height = `${blockHeight}px`;
+
+        // Append the course block to the schedule container
+        scheduleTable.parentElement.appendChild(courseBlock);
+    });
+
+    document.getElementById("courseForm").reset();
+}
+
+
 
         function addEvent() {
             const eventName = document.getElementById("event-name").value;
@@ -556,15 +562,16 @@
         }
 
         function convertTo12HourFormat(hour, minute) {
-            const period = hour >= 12 ? "PM" : "AM";
-            if (hour > 12) {
-                hour -= 12;
-            } else if (hour === 0) {
-                hour = 12;
-            }
-            const hourStr = hour.toString().padStart(2, '0');
-            return `${hourStr}:00 ${period}`; // Only use hour value
-        }
+    const period = hour >= 12 ? "PM" : "AM";
+    if (hour > 12) {
+        hour -= 12;
+    } else if (hour === 0) {
+        hour = 12;
+    }
+    const hourStr = hour.toString().padStart(2, '0');
+    const minuteStr = minute.toString().padStart(2, '0'); // Ensure 2-digit minute
+    return `${hourStr}:${minuteStr} ${period}`;
+}
     </script>
 </head>
 <body>
@@ -601,14 +608,14 @@
 
             <label for="course-end-time">End Time:</label>
             <input type="time" id="course-end-time" name="end-time" required>
-            <label for="course-day">Day:</label>
-            <select id="course-day" name="day" required>
-                <option>Monday</option>
-                <option>Tuesday</option>
-                <option>Wednesday</option>
-                <option>Thursday</option>
-                <option>Friday</option>
-            </select>
+            <label for="course-day">Days:</label>
+            <select id="course-day" name="days" multiple required>
+    <option>Monday</option>
+    <option>Tuesday</option>
+    <option>Wednesday</option>
+    <option>Thursday</option>
+    <option>Friday</option>
+</select>
 
             <label for="course-location">Location:</label>
             <select id="course-location" name="course-location" required>
