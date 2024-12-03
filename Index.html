@@ -185,108 +185,112 @@
             event.currentTarget.classList.add("active");
         }
 
+
         function addCourse() {
-    const crn = document.getElementById("crn").value;
-    const courseName = document.getElementById("course-name").value;
-    const section = document.getElementById("section").value;
-    const startTime = document.getElementById("course-start-time").value;
-    const endTime = document.getElementById("course-end-time").value;
-    const days = Array.isArray(document.getElementById("course-day").selectedOptions)
-        ? Array.from(document.getElementById("course-day").selectedOptions).map(option => option.value)
-        : [document.getElementById("course-day").value]; // Handles both single and multiple selections
-    const location = document.getElementById("course-location").value;
 
-    if (!startTime || !endTime) {
-        alert("Invalid time entered.");
-        return;
-    }
+            const crn = document.getElementById("crn").value;
+            const courseName = document.getElementById("course-name").value;
+            const section = document.getElementById("section").value;
+            const startTime = document.getElementById("course-start-time").value;
+            const endTime = document.getElementById("course-end-time").value;
+            const dayOptions = Array.from(document.getElementById("course-day").selectedOptions);
+            const days = dayOptions.map(option => option.value); // Get all selected days
+            const location = document.getElementById("course-location").value;
 
-    days.forEach(day => {
-        const dayIndex = {
-            "Monday": 1,
-            "Tuesday": 2,
-            "Wednesday": 3,
-            "Thursday": 4,
-            "Friday": 5
-        }[day];
+            if (!startTime || !endTime || days.length === 0) {
+                alert("Invalid input: Ensure start time, end time, and days are specified.");
+                return;
+            }
 
-        if (dayIndex === undefined) {
-            alert("Invalid day entered.");
-            return;
+            days.forEach(day => {
+                console.log("Adding course for day:", day);
+
+                const dayIndex = {
+                    "Monday": 1,
+                    "Tuesday": 2,
+                    "Wednesday": 3,
+                    "Thursday": 4,
+                    "Friday": 5
+                }[day];
+
+                if (dayIndex === undefined) {
+                    alert(`Invalid day selected: ${day}`);
+                    return;
+                }
+
+                // Separate hours and minutes before converting
+                function separateTimeComponents(time24) {
+                    let [hour, minute] = time24.split(":");
+                    hour = parseInt(hour, 10);
+                    minute = parseInt(minute, 10);
+                    return { hour, minute };
+                }
+
+                const startTimeComponents = separateTimeComponents(startTime);
+                const endTimeComponents = separateTimeComponents(endTime);
+
+                // Convert startTime and endTime to 12-hour format with AM/PM
+                const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour,0);
+                const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour,0);
+
+                // Build the IDs for start and end times (using only the hour value)
+                const startTimeId = `row-${startTimeFormatted}`;
+                const endTimeId = `row-${endTimeFormatted}`;
+
+                // Find the start and end row elements
+                const startRow = document.getElementById(startTimeId);
+                const endRow = document.getElementById(endTimeId);
+
+                if (!startRow || !endRow) {
+                    alert("Invalid time range.");
+                    return;
+                }
+
+                if (isTimeConflict(day, startTime, endTime)) {
+                    alert(`Time conflict detected on ${day}. Please choose a different time.`);
+                    return;
+                }
+                if (checkLocationConflict(day, startTime, location)) {
+                    alert(`Location conflict detected on ${day}. Travel time required between campuses.`);
+                    return;
+                }
+
+                // Add the course to scheduleData for the day
+                scheduleData[day].push({
+                    crn,
+                    courseName,
+                    section,
+                    startTime,
+                    endTime,
+                    location
+                });
+
+                // Calculate block position and size for visualization
+                const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
+                const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
+                const scheduleTable = document.querySelector(".schedule-table");
+
+                // Calculate the left position for the day
+                const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
+                const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
+                const containerRect = scheduleTable.getBoundingClientRect();
+                const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
+
+                // Create the course block element
+                const courseBlock = createBlockElement(courseName, "course", section, day, convertTo12HourFormat(startTimeComponents.hour,startTimeComponents.minute), convertTo12HourFormat(endTimeComponents.hour,endTimeComponents.minute), location);
+                courseBlock.style.top = `${topPosition}px`;
+                courseBlock.style.left = `${leftPosition}px`;
+                courseBlock.style.width = `100px`;
+                courseBlock.style.height = `${blockHeight}px`;
+
+                // Append the course block to the schedule container
+                scheduleTable.parentElement.appendChild(courseBlock);
+            });
+
+            // Reset the form after adding the course
+            document.getElementById("courseForm").reset();
         }
 
-        // Separate hours and minutes before converting
-        function separateTimeComponents(time24) {
-            let [hour, minute] = time24.split(":");
-            hour = parseInt(hour, 10);
-            minute = parseInt(minute, 10);
-            return { hour, minute };
-        }
-
-        const startTimeComponents = separateTimeComponents(startTime);
-        const endTimeComponents = separateTimeComponents(endTime);
-
-        // Convert startTime and endTime to 12-hour format with AM/PM
-        const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute);
-        const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute);
-
-        // Build the IDs for start and end times (using only the hour value)
-        const startTimeId = `row-${startTimeFormatted}`;
-        const endTimeId = `row-${endTimeFormatted}`;
-
-        // Find the start and end row elements
-        const startRow = document.getElementById(startTimeId);
-        const endRow = document.getElementById(endTimeId);
-
-        if (!startRow || !endRow) {
-            alert("Invalid time range.");
-            return;
-        }
-        if (isTimeConflict(day, startTime, endTime)) {
-            alert("Time conflict detected with an existing course or event. Please choose a different time.");
-            return;
-        }
-        if (checkLocationConflict(day, startTime, location)) {
-            alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
-            return;
-        }
-        // Add the course to scheduleData if no conflicts found
-        scheduleData[day].push({
-            crn: crn,
-            courseName: courseName,
-            section: section,
-            startTime: startTime,
-            endTime: endTime,
-            location: location
-        });
-
-        // Calculate top position and height for the course block using rows
-        const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
-        const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
-
-        // Calculate the left position for the day
-        const scheduleTable = document.querySelector(".schedule-table");
-        const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
-        const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
-        const containerRect = scheduleTable.getBoundingClientRect();
-        const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
-
-        // Create the course block element
-        const courseBlock = createBlockElement(courseName, "course", section, day, startTime, endTime, location);
-
-        courseBlock.classList.add("course-block");
-
-        courseBlock.style.top = `${topPosition}px`;
-        courseBlock.style.left = `${leftPosition}px`;
-        courseBlock.style.width = `100px`;
-        courseBlock.style.height = `${blockHeight}px`;
-
-        // Append the course block to the schedule container
-        scheduleTable.parentElement.appendChild(courseBlock);
-    });
-
-    document.getElementById("courseForm").reset();
-}
 
 
 
@@ -404,7 +408,7 @@
             removeButton.classList.add("remove-button");
             removeButton.innerText = "X"; // Simple "X" as the button label
             removeButton.onclick = function () {
-                removeEntry(day, name, startTime, endTime);
+                removeEntry(name, startTime, endTime);
                 block.remove();
             };
 
@@ -415,18 +419,28 @@
         }
 
 
-        function removeEntry(day, name, startTime, endTime) {
-            const daySchedule = scheduleData[day];
-            for (let i = 0; i < daySchedule.length; i++) {
-                if (
-                    (daySchedule[i].courseName === name || daySchedule[i].eventName === name) &&
-                    daySchedule[i].startTime === startTime &&
-                    daySchedule[i].endTime === endTime
-                ) {
-                    daySchedule.splice(i, 1); // Remove the entry from scheduleData
-                    break;
+        function removeEntry(name, startTime, endTime) {
+            // Iterate over each day in the scheduleData
+            for (const day in scheduleData) {
+                if (scheduleData.hasOwnProperty(day)) {
+                    // Filter out the entries that match the specified course name and time
+                    scheduleData[day] = scheduleData[day].filter(entry => {
+                        return !(
+                            (entry.courseName === name || entry.eventName === name) &&
+                            entry.startTime === startTime &&
+                            entry.endTime === endTime
+                        );
+                    });
                 }
             }
+
+            // Remove the visual elements for all instances of this course or event from the schedule
+            const blocks = document.querySelectorAll(".course-block");
+            blocks.forEach(block => {
+                if (block.innerText.includes(name) && block.innerText.includes(`${startTime} - ${endTime}`)) {
+                    block.remove();
+                }
+            });
         }
 
 
@@ -439,18 +453,42 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
+
                 const course = await response.json();
                 console.log(course);
+
                 // Populate the form with the fetched course data
                 document.getElementById("crn").value = course.crn;
                 document.getElementById("course-name").value = course.subject + " " + course.number;
                 document.getElementById("section").value = course.section;
                 document.getElementById("course-start-time").value = convertToInputTimeFormat(course.startTime);
                 document.getElementById("course-end-time").value = convertToInputTimeFormat(course.endTime);
-                document.getElementById("course-day").value = getDayFromCourse(course.days);
+
+                // Parse the days and select them in the dropdown
+                const parsedDays = parseDays(course.days);
+                const daySelect = document.getElementById("course-day");
+                Array.from(daySelect.options).forEach(option => {
+                    option.selected = parsedDays.includes(option.value);
+                });
+
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
+        }
+
+        // Helper function to parse days into a readable format
+        function parseDays(dayString) {
+            const daysMap = {
+                M: "Monday",
+                T: "Tuesday",
+                W: "Wednesday",
+                R: "Thursday",
+                F: "Friday"
+            };
+            return dayString
+                .split("") // Convert to an array of characters
+                .map(char => daysMap[char]) // Map each character to the corresponding day
+                .filter(day => day !== undefined); // Remove undefined values
         }
 
         //Helper Functions
@@ -562,16 +600,42 @@
         }
 
         function convertTo12HourFormat(hour, minute) {
-    const period = hour >= 12 ? "PM" : "AM";
-    if (hour > 12) {
-        hour -= 12;
-    } else if (hour === 0) {
-        hour = 12;
-    }
-    const hourStr = hour.toString().padStart(2, '0');
-    const minuteStr = minute.toString().padStart(2, '0'); // Ensure 2-digit minute
-    return `${hourStr}:${minuteStr} ${period}`;
-}
+
+            // Debugging log: log the original hour and minute
+            console.log("Input hour:", hour, "Input minute:", minute);
+
+            const period = hour >= 12 ? "PM" : "AM";
+
+            if (hour > 12) {
+                hour -= 12;
+            } else if (hour === 0) {
+                hour = 12;
+            }
+
+            const hourStr = hour.toString().padStart(2, '0');
+            const minuteStr = minute.toString().padStart(2, '0'); // Ensure 2-digit minute
+
+            // Debugging log: log the converted values
+            console.log("Converted time:", `${hourStr}:${minuteStr} ${period}`);
+
+            return `${hourStr}:${minuteStr} ${period}`;
+        }
+
+        function parseDays(dayString) {
+            const daysMap = {
+                M: "Monday",
+                T: "Tuesday",
+                W: "Wednesday",
+                R: "Thursday",
+                F: "Friday"
+            };
+            return dayString
+                .split("") // Convert to an array
+                .map((char, index) => (char !== "_" ? daysMap[char] : null)) // Map characters to days
+                .filter(day => day !== null); // Remove null values
+        }
+
+
     </script>
 </head>
 <body>
@@ -610,12 +674,12 @@
             <input type="time" id="course-end-time" name="end-time" required>
             <label for="course-day">Days:</label>
             <select id="course-day" name="days" multiple required>
-    <option>Monday</option>
-    <option>Tuesday</option>
-    <option>Wednesday</option>
-    <option>Thursday</option>
-    <option>Friday</option>
-</select>
+                <option>Monday</option>
+                <option>Tuesday</option>
+                <option>Wednesday</option>
+                <option>Thursday</option>
+                <option>Friday</option>
+            </select>
 
             <label for="course-location">Location:</label>
             <select id="course-location" name="course-location" required>
