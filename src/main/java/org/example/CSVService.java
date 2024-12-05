@@ -1,9 +1,10 @@
 package org.example;
 
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import java.time.format.DateTimeParseException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,10 +34,13 @@ public class CSVService {
         return event;
     }
 
-    private LocalDateTime parseTime(String timeStr) {
-        // Assuming the time format is 12-hour (e.g., 2:00 PM, 11:00 AM)
-        // Parse the time into LocalDateTime format
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-        return LocalDateTime.parse(timeStr, formatter);
+private LocalDateTime parseTime(String timeStr) {
+    DateTimeFormatter formatter12hr = DateTimeFormatter.ofPattern("h:mm a");
+    DateTimeFormatter formatter24hr = DateTimeFormatter.ofPattern("HH:mm");
+
+    try {
+        return LocalDateTime.parse(timeStr, formatter12hr);
+    } catch (DateTimeParseException e1) {
+        return LocalDateTime.parse(timeStr, formatter24hr);
     }
 }

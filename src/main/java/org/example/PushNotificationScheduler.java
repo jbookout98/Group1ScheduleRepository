@@ -1,10 +1,10 @@
 package org.example;
 
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PushNotificationScheduler {
@@ -17,20 +17,20 @@ public class PushNotificationScheduler {
         this.pushNotificationService = pushNotificationService;
     }
 
-    @Scheduled(fixedRate = 60000)  // Check every minute
+    @Scheduled(fixedRate = 60000) // Check every minute
     public void checkAndSendPushNotifications() {
         LocalDateTime now = LocalDateTime.now();
-        List<Event> events = csvService.getUpcomingEvents(now, 60); // Example interval: 60 minutes
+        List<Event> events = csvService.getUpcomingEvents(now, 60);
 
-        for (Event event : events) {
+        events.parallelStream().forEach(event -> {
             if (event.isNotifyByPush()) {
                 pushNotificationService.sendPushNotification(
                         "Event Reminder",
                         "Your event '" + event.getName() + "' is approaching!",
-                        event.getUserId() // Assuming userId is a Firebase token
-                );
+                        event.getUserId());
             }
-        }
+        });
+
     }
-    
 }
+

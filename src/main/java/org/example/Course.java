@@ -31,7 +31,7 @@ public class Course {
     public Course(String crn, String subject, String department, String number, String section,
                   String instructor, String days, String startTime, String endTime,
                   String building, String room, String campus, String classType,
-                  String method, String dpOrIn, String pot, int actual, int max, string color) {
+                  String method, String dpOrIn, String pot, int actual, int max, String color) {
         this.crn = crn;
         this.subject = subject;
         this.department = department;
