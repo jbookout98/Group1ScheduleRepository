@@ -1,5 +1,5 @@
-CRN,Subject,Department,Number,Section,Instructor,Days,Start Time,End Time,Building,Room,Campus,Class Type,Method,DP or IN,PoT,Actual,Max
-30208,A S,AS,1000,251,"Ekren, Brenton J",__T_R__,2:00 PM,5:30 PM,ASBN,150,"601 University Dr, San Marcos, TX 78666",LAB,FTF,,1,54,90
-40086,AAS,DLA,4388,251,"Goldstone, Dwonna Naomi",_______,,,ARR,ARR,"601 University Dr, San Marcos, TX 78666",IND,FTF,DP,1,4,5
-30126,ACC,ACC,5361,251,"Rutledge, Robert W",___W___,6:30 PM,9:20 PM,MCOY,224,"601 University Dr, San Marcos, TX 78666",SEM,FTF,DP,1,18,20
-39216,ANTH,ANTH,3331D,251,"Fancher, James Patrick",__T_R__,11:00 AM,12:20 PM,ELA,226,"601 University Dr, San Marcos, TX 78666",LEC,FTF,,1,14,20
+CRN,Subject,Department,Number,Section,Instructor,Days,Start Time,End Time,Building,Room,Campus,Class Type,Method,DP or IN,PoT,Actual,Max,Color
+30208,A S,AS,1000,251,"Ekren, Brenton J",__T_R__,2:00 PM,5:30 PM,ASBN,150,"601 University Dr, San Marcos, TX 78666",LAB,FTF,,1,54,90,Red
+40086,AAS,DLA,4388,251,"Goldstone, Dwonna Naomi",_______,,,ARR,ARR,"601 University Dr, San Marcos, TX 78666",IND,FTF,DP,1,4,5,Blue
+30126,ACC,ACC,5361,251,"Rutledge, Robert W",___W___,6:30 PM,9:20 PM,MCOY,224,"601 University Dr, San Marcos, TX 78666",SEM,FTF,DP,1,18,20,Red
+39216,ANTH,ANTH,3331D,251,"Fancher, James Patrick",__T_R__,11:00 AM,12:20 PM,ELA,226,"601 University Dr, San Marcos, TX 78666",LEC,FTF,,1,14,20,Green
