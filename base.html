@@ -295,6 +295,7 @@
 
 
         function addEvent() {
+
             const eventName = document.getElementById("event-name").value;
             const eventType = document.getElementById("event-type").value;
             const startTime = document.getElementById("event-start-time").value;
@@ -303,17 +304,10 @@
             const location = document.getElementById("event-location").value;
 
             if (!startTime || !endTime) {
-                alert("Invalid time entered.");
+                alert("Invalid input: Ensure start time and end time are specified.");
                 return;
             }
-            if (isTimeConflict(day, startTime, endTime)) {
-                alert("Time conflict detected with an existing course or event. Please choose a different time.");
-                return;
-            }
-            if (checkLocationConflict(day, startTime, location)) {
-                alert("Location conflict detected: Travel time between Round Rock and San Marcos requires at least 1.5 hours between events.");
-                return;
-            }
+
             const dayIndex = {
                 "Monday": 1,
                 "Tuesday": 2,
@@ -323,17 +317,10 @@
             }[day];
 
             if (dayIndex === undefined) {
-                alert("Invalid day entered.");
+                alert(`Invalid day selected: ${day}`);
                 return;
             }
-            scheduleData[day].push({
-                eventName: eventName,
-                eventType: eventType,
-                startTime: startTime,
-                endTime: endTime,
-                location: location
-            });
-            // Separate hours and minutes before converting
+
             function separateTimeComponents(time24) {
                 let [hour, minute] = time24.split(":");
                 hour = parseInt(hour, 10);
@@ -345,8 +332,8 @@
             const endTimeComponents = separateTimeComponents(endTime);
 
             // Convert startTime and endTime to 12-hour format with AM/PM
-            const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour);
-            const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour);
+            const startTimeFormatted = convertTo12HourFormat(startTimeComponents.hour, 0);
+            const endTimeFormatted = convertTo12HourFormat(endTimeComponents.hour, 0);
 
             // Build the IDs for start and end times (using only the hour value)
             const startTimeId = `row-${startTimeFormatted}`;
@@ -361,32 +348,48 @@
                 return;
             }
 
-            // Calculate top position and height for the event block using rows
-            const topPosition = startRow.offsetTop + startRow.offsetHeight + 10;
-            const blockHeight = endRow.offsetTop - startRow.offsetTop;
+            if (isTimeConflict(day, startTime, endTime)) {
+                alert(`Time conflict detected on ${day}. Please choose a different time.`);
+                return;
+            }
+            if (checkLocationConflict(day, startTime, location)) {
+                alert(`Location conflict detected on ${day}. Travel time required between campuses.`);
+                return;
+            }
+
+            // Add the event to scheduleData for the day
+            scheduleData[day].push({
+                eventName,
+                eventType,
+                startTime,
+                endTime,
+                location
+            });
+
+            // Calculate block position and size for visualization
+            const topPosition = startRow.offsetTop + startRow.offsetHeight + 8 + (startTimeComponents.minute);
+            const blockHeight = endRow.offsetTop - startRow.offsetTop - (startTimeComponents.minute) + (endTimeComponents.minute);
+            const scheduleTable = document.querySelector(".schedule-table");
 
             // Calculate the left position for the day
-            const scheduleTable = document.querySelector(".schedule-table");
             const dayColumn = scheduleTable.querySelector(`th:nth-child(${dayIndex + 1})`);
             const columnCenter = dayColumn.getBoundingClientRect().left + (dayColumn.offsetWidth / 2);
             const containerRect = scheduleTable.getBoundingClientRect();
             const leftPosition = columnCenter - containerRect.left - 50; // Adjust to center the block
 
-           const eventBlock = createBlockElement(eventName, "event", '', day, startTime, endTime, location);
-
-            // Set the positioning and size for the block
+            // Create the event block element
+            const eventBlock = createBlockElement(eventName, "event", eventType, day, convertTo12HourFormat(startTimeComponents.hour, startTimeComponents.minute), convertTo12HourFormat(endTimeComponents.hour, endTimeComponents.minute), location);
             eventBlock.style.top = `${topPosition}px`;
             eventBlock.style.left = `${leftPosition}px`;
-            eventBlock.style.width = `120px`;
+            eventBlock.style.width = `100px`;
             eventBlock.style.height = `${blockHeight}px`;
 
             // Append the event block to the schedule container
             scheduleTable.parentElement.appendChild(eventBlock);
+
+            // Reset the form after adding the event
             document.getElementById("eventForm").reset();
-
-
         }
-
         function createBlockElement(name, type, section, day, startTime, endTime, location) {
             const block = document.createElement("div");
             block.classList.add("course-block");
