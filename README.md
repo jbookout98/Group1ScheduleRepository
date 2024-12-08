@@ -12,3 +12,6 @@ But I used IntelliJ
 Run the index html
 then run the project.
 You can now communicate.
+In order to login username is "username"
+password is "password"
+After which you can now add stuff to week template.
