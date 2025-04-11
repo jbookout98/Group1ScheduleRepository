@@ -13,48 +13,10 @@ public class CSVCourseReader {
     /**
      * Reads course data from a CSV file and returns a list of {@link Course} objects.
      *
-     * <p>This method reads a CSV file containing course information, parses each row into a
-     * {@link Course} object, and handles common issues such as missing or invalid data.
-     * Missing data is ignored because school did not input it.</p>
-     *
-     * @param filePath the relative path to the CSV file to be read. The file should be located in the
-     *                 classpath and have at least 18 columns.
-     * @return a {@link List} of {@link Course} objects parsed from the CSV file. Returns an empty list
-     *         if the file cannot be read or contains no valid records.
-     *
+     * @param filePath the relative path to the CSV file. The file should have at least 18 columns.
+     * @return a {@link List} of {@link Course} objects parsed from the CSV file. If the file cannot be
+     *         read or contains no valid records, an empty list is returned.
      * @throws IllegalArgumentException if the filePath is null or empty.
-     *
-     * <h3>CSV File Requirements:</h3>
-     * <ul>
-     *   <li>The first row should be a header and is skipped during parsing.</li>
-     *   <li>Each subsequent row should have at least 18 columns, corresponding to course fields.</li>
-     *   <li>Numeric fields (e.g., actual and max) should contain valid integer values.</li>
-     * </ul>
-     *
-     * <h3>Handling Missing or Invalid Data:</h3>
-     * <ul>
-     *   <li>If a field is missing or empty, default values are used where applicable:
-     *     <ul>
-     *       <li>Department, Section: "Unknown"</li>
-     *       <li>Instructor, Building: "TBD"</li>
-     *       <li>Room: "N/A"</li>
-     *       <li>Numeric fields (e.g., actual, max): 0</li>
-     *     </ul>
-     *   </li>
-     *   <li>Records with invalid numeric values are skipped entirely.</li>
-     *   <li>Incomplete rows (less than 18 columns) are skipped.</li>
-     * </ul>
-     *
-     * <h3>Example Usage:</h3>
-     * <pre>
-     * {@code
-     * List<Course> courses = CSVCourseReader.readCoursesFromCSV("courses.csv");
-     * courses.forEach(System.out::println);
-     * }
-     * </pre>
-     *
-     * @see Course
-     * @see CSVReader
      */
 
     public static List<Course> readCoursesFromCSV(String filePath) {
